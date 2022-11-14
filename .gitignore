@@ -5,3 +5,5 @@ analysis_scripts/*.txt
 analysis_scripts/*.trees
 analysis_scripts/*.log
 analysis_scripts/*.treefile
+analysis_scripts/*.treefile
+alignments/lintr
