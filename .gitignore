@@ -1,0 +1,7 @@
+to_ignore
+analysis_scripts/*.xml
+analysis_scripts/*.ops
+analysis_scripts/*.txt
+analysis_scripts/*.trees
+analysis_scripts/*.log
+analysis_scripts/*.treefile
