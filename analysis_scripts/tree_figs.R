@@ -97,7 +97,7 @@ gheatmap(p65,
 
 ############## COI Tree plot below for fig 4 ###################
 
-coi_tree <- read.newick("./data/COI_653_f.treefile")
+coi_tree <- read.newick("./data/COI_653bp_f.treefile")
 
 loc <- vector()
 for (i in seq_along(coi_tree$tip.label)){
@@ -130,7 +130,7 @@ for (i in seq_along(loc$Location)){
 
 g <- factor(loc$Location)
 
-group_nfo <- split(coi_tree$tip.label, g)
+group_info <- split(coi_tree$tip.label, g)
 test <- groupOTU(coi_tree, group_info)
 ggtree(test, aes(color = group), branch.length = "none", layout = "circular") +
   scale_color_manual(values  = c("#b2182b", "#4d4d4d"), name = "") +

@@ -9,6 +9,7 @@ library("seqinr")
 library("ggplot2")
 library("adegenet")
 library("grid")
+library("viewport")
 
 ############### 5% DAPC ################
 five_pc_aln <- fasta2DNAbin("./data/5percent_mitogenomes.fasta")
@@ -297,7 +298,7 @@ colnames(sixtyfive_pc_scatterplot_data) <- c("PC1", "PC2", "Cluster")
 
 sixtyfive_pc_scatterplot <- ggplot(sixtyfive_pc_scatterplot_data) +
   geom_point(aes(x = PC1, y = PC2, fill = Cluster), shape = 21, size = 5) +
-  scale_fill_manual(values = alpha(mycol, 0.6), name = "") +
+  scale_fill_manual(values = alpha(mycol2, 0.6), name = "") +
   theme(
     axis.line = element_line(colour = "black"),
     panel.border = element_rect(colour = "black", fill = NA, size = 0.5),

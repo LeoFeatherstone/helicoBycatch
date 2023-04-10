@@ -1,5 +1,5 @@
 # script converts tips labs in 65% fasta to match the dates.txt file
-
+# only needs to be run once
 library(ape)
 
 aln <- read.dna("./data/65percent_mitogenomes.fasta", format = "fasta")
@@ -17,6 +17,7 @@ rownames(aln) <- gsub(rownames(aln), pattern = "Nz", replacement = "NZL")
 rownames(aln) <- gsub(rownames(aln), pattern = "Fr", replacement = "FRA")
 rownames(aln) <- gsub(rownames(aln), pattern = "Ma", replacement = "MDG")
 rownames(aln) <- gsub(rownames(aln), pattern = "_..s", replacement = "")
+rownames(aln) <- gsub(rownames(aln), pattern = "AUS_AUS", replacement = "AUS")
 
 # check
 dates <- read.delim("./data/65%_ages.txt", head = FALSE)

@@ -4,13 +4,16 @@
 !.gitignore
 !analysis_scripts/aus_clade_size.R
 !analysis_scripts/DAPC_figs.R
-!analysis_scripts/format_tips.R
 !analysis_scripts/get_clades.R
 !analysis_scripts/label_format.R
 !analysis_scripts/tree_figs.R
-!analysis_scripts/ml_trees.sh
+!analysis_scripts/coverage_figs.R
 
+!data/ml_trees.sh
 !data/*.csv
 !data/*.trees
-!data/*.fasta
+!data/*.treefile
 !data/*.txt
+!/data/COI_653bp_f.fasta
+!/data/65percent_mitogenomes.fasta
+!/data/5percent_mitogenomes.fasta
