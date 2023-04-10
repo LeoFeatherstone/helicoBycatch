@@ -1,0 +1,16 @@
+*.*
+
+!README>.md
+!.gitignore
+!analysis_scripts/aus_clade_size.R
+!analysis_scripts/DAPC_figs.R
+!analysis_scripts/format_tips.R
+!analysis_scripts/get_clades.R
+!analysis_scripts/label_format.R
+!analysis_scripts/tree_figs.R
+!analysis_scripts/ml_trees.sh
+
+!data/*.csv
+!data/*.trees
+!data/*.fasta
+!data/*.txt
