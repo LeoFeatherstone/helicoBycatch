@@ -1,6 +1,6 @@
 *.*
 
-!README>.md
+!README.md
 !.gitignore
 !analysis_scripts/aus_clade_size.R
 !analysis_scripts/DAPC_figs.R
