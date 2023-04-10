@@ -9,12 +9,10 @@ dates <- lapply(date_files, function(x) read.delim(x, header = FALSE))
 names(dates) <- aln_files
 
 # reformat .fasta headers
-for (i in seq_along(aln)){
+for (i in seq_along(aln)) {
     for (j in seq_along(rownames(aln[[i]]))) {
         which <- grep(dates[[i]][, 1], pattern = rownames(aln[[i]])[j])
         tmp <- dates[[i]][which, 2]
         rownames(aln[[i]])[j] <- paste0(rownames(aln[[i]])[j], "|", tmp)
     }
 }
-
-# save .fasta

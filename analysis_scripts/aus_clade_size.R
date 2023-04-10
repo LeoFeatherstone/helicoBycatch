@@ -2,9 +2,7 @@
 library(ape)
 library(ggplot2)
 
-setwd(paste0(getwd(), "/analysis_scripts"))
-
-source("get_clades.R")
+source("./analysis_scripts/get_clades.R")
 
 # read in trees
 tfiles <- dir(pattern = "relaxed[.]trees")

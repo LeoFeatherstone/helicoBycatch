@@ -2,7 +2,7 @@
 
 library(ape)
 
-aln <- read.dna("65percent_mitogenomes.fasta", format = "fasta")
+aln <- read.dna("./data/65percent_mitogenomes.fasta", format = "fasta")
 
 rownames(aln)
 rownames(aln) <- gsub(rownames(aln), pattern = "AM", replacement = "AUS_AM")
@@ -19,7 +19,7 @@ rownames(aln) <- gsub(rownames(aln), pattern = "Ma", replacement = "MDG")
 rownames(aln) <- gsub(rownames(aln), pattern = "_..s", replacement = "")
 
 # check
-dates <- read.delim("65%_ages.txt", head = FALSE)
+dates <- read.delim("./data/65%_ages.txt", head = FALSE)
 all(rownames(aln) %in% dates[, 1]) & all(dates[, 1] %in% rownames(aln))
 
-write.dna(aln, file = "65percent_mitogenomes.fasta", format = "fasta")
+write.dna(aln, file = "./data/65percent_mitogenomes.fasta", format = "fasta")
