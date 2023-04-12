@@ -136,3 +136,4 @@ ggtree(test, aes(color = group), branch.length = "none", layout = "circular") +
   scale_color_manual(values  = c("#b2182b", "#4d4d4d"), name = "") +
   theme(legend.text = element_text(size  = 12)) +
   geom_tiplab(size = 1)
+
