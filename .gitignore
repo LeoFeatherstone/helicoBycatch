@@ -2,7 +2,7 @@
 
 !README.md
 !.gitignore
-!analysis_scripts/aus_clade_size.R
+#!analysis_scripts/aus_clade_size.R
 !analysis_scripts/DAPC_figs.R
 !analysis_scripts/get_clades.R
 !analysis_scripts/tree_figs.R

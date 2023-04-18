@@ -9,7 +9,7 @@ library("seqinr")
 library("ggplot2")
 library("adegenet")
 library("grid")
-library("viewport")
+library("grid")
 
 ############### 5% DAPC ################
 five_pc_aln <- fasta2DNAbin("./data/5percent_mitogenomes.fasta")
@@ -23,14 +23,19 @@ five_pc_pca <- dudi.pca(
   nf = 3
 ) # We have 189 eigenvalues ==> 189 PC's
 
-# Grouping. Set n.pca to no. eigenvalues (=189). Max Clusters = 10 to cover 6
+# Grouping. Set n.pca to no. eigenvalues (=189)
 five_pc_clustered <- find.clusters(
   five_pc_genind,
-  max.n.clust = 10,
+  n.clust = 2,
   n.pca = 189
-) # choose two clusters
+)
 
-five_pc_dapc <- dapc(five_pc_genind, five_pc_clustered$grp, n.pca = 189)
+five_pc_dapc <- dapc(
+  five_pc_genind,
+  five_pc_clustered$grp,
+  n.pca = 189,
+  n.da = 10
+)
 
 mycol <- c("#4d4d4d", "#b2182b") # armigera red; conferta - grey
 
@@ -143,22 +148,35 @@ vp_bottom_left <- viewport(
   x = 0.5
 )
 
-print(p5, vp = vp_bottom_left)
+print(five_pc_scatterplot, vp = vp_bottom_left)
 
 
 ############### COI DAPC ################
 coi_aln <- fasta2DNAbin("./data/COI_653bp_f.fasta")
-
 coi_genind <- DNAbin2genind(coi_aln, polyThres = 0.01)
-# Choose 73 PC's and 2-7 clusters. Repeat this in the dapc funnction
+coi_scalegen <- scaleGen(coi_genind, NA.method = "mean")
+
+coi_pca <- dudi.pca(
+  coi_scalegen,
+  cent = FALSE,
+  scale = FALSE,
+  scannf = FALSE,
+  nf = 3
+) # We have 13 eigenvalues ==> 13 PC's
 
 coi_clustered <- find.clusters(
   coi_genind,
-  max.n.clust = 100,
-  n.pca = 100
-) # choose 2
+  n.clust = 2,
+  n.pca = 13
+)
 
-coi_dapc <- dapc(coi_genind, coi_clustered$grp, n.pca = 73) # choose 10 DFs
+coi_dapc <- dapc(
+  coi_genind, 
+  coi_clustered$grp, 
+  n.pca = 13, 
+  n.da = 10
+)
+
 post <- coi_dapc$posterior
 colnames(post) <- c("cluster1", "cluster2") # cluster 1 = conferta; 2 = armigera
 
@@ -168,6 +186,7 @@ mycol <- c("#4d4d4d", "#b2182b") # armigera red; conferta - grey
 coi_scatterplot_data <- cbind.data.frame(coi_dapc$tab[, c(1, 2)], coi_dapc$grp)
 colnames(coi_scatterplot_data) <- c("PC1", "PC2", "Cluster")
 
+# PCA scatterplot for all samples in COI dataset
 coi_scatterplot <- ggplot(coi_scatterplot_data) +
   geom_point(aes(x = PC1, y = PC2, fill = Cluster), shape = 21, size = 5) +
   scale_fill_manual(values = alpha(mycol, 0.6), name = "") +
@@ -220,9 +239,10 @@ legend(
 )
 
 
+## Barplot and location for samples included in the other datasets
 barplot(
   t(post[order(post[, 2]), ]),
-  col = alpha(col, 0.55),
+  col = alpha(col[order(post[, 2])], 0.55),
   border = NA,
   space = 0,
   xlab = "Individuals",
@@ -276,16 +296,17 @@ sixtyfive_pc_pca <- dudi.pca(
 # Set num pca to num eigenvalues (=54). Max Clusters = 10 to cover 6
 sixtyfive_pc_clustered <- find.clusters(
   sixtyfive_pc_genind,
-  max.n.clust = 10,
+  n.clust = 2,
   n.pca = 54
-) # choose two clusters
+)
 
 # Doing the DAPC
 sixtyfive_pc_dapc <- dapc(
   sixtyfive_pc_genind,
   sixtyfive_pc_clustered$grp,
-  n.pca = 54
-) # choose 10 DFs
+  n.pca = 54,
+  n.da = 10
+)
 
 mycol2 <- c("#4d4d4d", "#b2182b") # armigera red; conferta - grey
 

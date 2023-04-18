@@ -5,7 +5,7 @@ library(ggplot2)
 source("./analysis_scripts/get_clades.R")
 
 # read in trees
-tfiles <- dir(pattern = "relaxed[.]trees")
+tfiles <- dir(pattern = "./data/relaxed[.]trees") # UPTO: Update tree path
 trees <- lapply(tfiles, function(x) read.nexus(x))
 
 # apply burnin
