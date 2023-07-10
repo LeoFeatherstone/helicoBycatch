@@ -197,6 +197,12 @@ bind_rows("Aus Samples" = aus, "All Samples" = all, .id = "group") %>%
     yend = c(Inf, Inf, Inf),
     colour = "blue"
   ) +
+  annotate(
+    "label",
+    x = c(5, 50, 95),
+    y = c(300, 300, 300),
+    label = c("5%", "50%", "95%")
+  ) +
   theme_minimal()
 dev.off()
 
