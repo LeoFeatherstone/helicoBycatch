@@ -5,7 +5,7 @@
 !analysis_scripts/DAPC_figs.R
 !analysis_scripts/tree_figs.R
 !analysis_scripts/coverage_figs.R
-
+!*.svg
 !data/ml_trees.sh
 !data/*.csv
 !data/*.trees
