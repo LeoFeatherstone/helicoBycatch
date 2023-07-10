@@ -206,5 +206,35 @@ bind_rows("Aus Samples" = aus, "All Samples" = all, .id = "group") %>%
   theme_minimal()
 dev.off()
 
+## check overlap with samples in alignments
+aln_files <- dir(path = "./data", pattern = "fasta$", full.names = TRUE)
+aln <- lapply(
+  aln_files,
+  function(x) {
+    ape::read.dna(x, format = "fasta")
+  }
+)
 
+modified_names <- cov$sample
+modified_names <- gsub(modified_names, pattern = "Au_", replacement = "AUS_")
+# check included
+check_match <- function(vec, aln) {
+  names <- rownames(aln)
+  match <- sapply(
+    vec,
+    function(x) {
+      grepl(x, names)
+    }
+  )
+  return(sum(match))
+}
 
+lapply(
+  aln,
+  function(x) {
+    op <- paste0(
+      "aln:", length(rownames(x)),
+      " match:", check_match(modified_names, x)
+    )
+  }
+)
