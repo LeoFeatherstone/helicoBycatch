@@ -3,6 +3,7 @@ library(reshape2)
 library(cowplot)
 library(gridGraphics)
 library(ape)
+library(tidyverse)
 
 ## data for decay plot
 dat <- read.csv("./data/tableS1.csv", header = TRUE)
@@ -129,3 +130,80 @@ panel <- plot_grid(
   ncol = 2)
 
 plot_grid(panel, legend, rel_widths = c(2, .4))
+
+
+## file size  and coverge plot
+size <- as_tibble(read.delim("file_size_filtered.txt", sep = " ", header = FALSE))
+colnames(size) <- c("size", "sample")
+
+cov <- as_tibble(read.delim("coverage.txt", sep = " ", header = FALSE))
+colnames(cov) <- c("sample", "coverage")
+
+# some mismatch between samples. right_join ensures all file sizes defined
+data <- left_join(cov, size, by = "sample") %>%
+  mutate(megabytes = case_when(
+    grepl("G", size) ~ as.numeric(gsub(pattern = "G", replacement = "", size)) * 1000,
+    grepl("M", size) ~ as.numeric(gsub(pattern = "M", replacement = "", size)) * 1,
+  ))
+
+# cov vs. size
+svg("coverage_vs_filesize.svg")
+  ggplot(data) +
+    geom_point(
+      aes(x = megabytes, y = 100 * coverage),
+      pch = 21,
+      fill = "steelblue",
+      size = 3,
+      alpha = 0.6
+    ) +
+    ylim(0, 100) +
+    ylab("% Mitogenome Coverage") +
+    theme_minimal()
+dev.off()
+
+# coverage threshold plot
+
+all <- data %>%
+  select(coverage) %>%
+  group_by(coverage) %>%
+  summarise(n = n()) %>%
+  mutate(n = max(n) - cumsum(n))
+
+aus <- data %>%
+  filter(grepl("AM|Au_", sample)) %>%
+  select(coverage) %>%
+  group_by(coverage) %>%
+  summarise(n = n()) %>%
+  mutate(n = max(n) - cumsum(n))
+
+bind_rows("Aus Samples" = aus, "All Samples" = all, .id = "group") %>% tail()
+
+#svg("number_above_coverage.svg")
+
+  ggplot() +
+  geom_line(
+    data = all_cov,
+    aes(x = 100 * coverage, y = dim(all_cov)[1] - cumsum(n)),
+    col = "black"
+  ) +
+  geom_line(
+    data = aus_cov,
+    aes(x = 100 * coverage, y = dim(aus_cov)[1] - cumsum(n)),
+    col = "darkred"
+  ) +
+  xlab("Mitogenome Coverage Threshold (%)") +
+  ylab("Number of Samples above Threshold") +
+  annotate(
+    "segment",
+    x = c(5, 50, 95),
+    xend = c(5, 50, 95),
+    y = c(0, 0, 0),
+    yend = c(Inf, Inf, Inf),
+    colour = "blue"
+  ) +
+  theme_minimal()
+
+#dev.off()
+
+
+
