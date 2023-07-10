@@ -163,34 +163,30 @@ dev.off()
 
 # coverage threshold plot
 
+totalSamples <- length(data$sample)
 all <- data %>%
   select(coverage) %>%
   group_by(coverage) %>%
   summarise(n = n()) %>%
-  mutate(n = max(n) - cumsum(n))
+  mutate(n = totalSamples - cumsum(n))
 
+ausSamples <- length(which(grepl("AM|Au_", data$sample)))
 aus <- data %>%
   filter(grepl("AM|Au_", sample)) %>%
   select(coverage) %>%
   group_by(coverage) %>%
   summarise(n = n()) %>%
-  mutate(n = max(n) - cumsum(n))
+  mutate(n = ausSamples - cumsum(n))
 
-bind_rows("Aus Samples" = aus, "All Samples" = all, .id = "group") %>% tail()
 
-#svg("number_above_coverage.svg")
 
+svg("number_above_coverage.svg")
+bind_rows("Aus Samples" = aus, "All Samples" = all, .id = "group") %>%
   ggplot() +
   geom_line(
-    data = all_cov,
-    aes(x = 100 * coverage, y = dim(all_cov)[1] - cumsum(n)),
-    col = "black"
+    aes(x = 100 * coverage, y = n, col = group),
   ) +
-  geom_line(
-    data = aus_cov,
-    aes(x = 100 * coverage, y = dim(aus_cov)[1] - cumsum(n)),
-    col = "darkred"
-  ) +
+  scale_color_manual(values = c("black", "darkred")) +
   xlab("Mitogenome Coverage Threshold (%)") +
   ylab("Number of Samples above Threshold") +
   annotate(
@@ -202,8 +198,7 @@ bind_rows("Aus Samples" = aus, "All Samples" = all, .id = "group") %>% tail()
     colour = "blue"
   ) +
   theme_minimal()
-
-#dev.off()
+dev.off()
 
 
 
