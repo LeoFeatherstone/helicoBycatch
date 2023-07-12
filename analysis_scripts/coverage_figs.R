@@ -144,10 +144,16 @@ data <- left_join(cov, size, by = "sample") %>%
   mutate(megabytes = case_when(
     grepl("G", size) ~ as.numeric(gsub(pattern = "G", replacement = "", size)) * 1000,
     grepl("M", size) ~ as.numeric(gsub(pattern = "M", replacement = "", size)) * 1,
-  ))
+  )) %>%
+  mutate(
+    sequencing_type = case_when(
+      grepl("AM", sample) ~ "AM",
+      grepl("CA", sample) ~ "CA",
+    )
+  )
 
 # cov vs. size
-svg("coverage_vs_filesize.svg")
+pdf("coverage_vs_filesize.pdf", useDingbats = FALSE)
   ggplot(data) +
     geom_point(
       aes(x = megabytes, y = 100 * coverage),
@@ -156,7 +162,8 @@ svg("coverage_vs_filesize.svg")
       size = 3,
       alpha = 0.6
     ) +
-    ylim(0, 100) +
+    #ylim(0, 100) +
+    facet_wrap(~sequencing_type, scales = "free") +
     ylab("% Mitogenome Coverage") +
     theme_minimal()
 dev.off()
