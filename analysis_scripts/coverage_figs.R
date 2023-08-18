@@ -6,242 +6,119 @@ library(ape)
 library(tidyverse)
 
 ## data for decay plot
-dat <- read.csv("./data/tableS1.csv", header = TRUE)
+dat <- read.csv("metadata.csv", header = TRUE)
 
-## Doing Coverage plots
-# COI coverage
-mat <- read.dna(
-  file = "./data/COI_653bp_f.fasta",
-  format = "fasta", as.matrix = TRUE, as.character = TRUE
+# get alignments
+aln_files <- dir(
+  path = "./data/coverage_separated/",
+  pattern = ".gatk.fasta$",
+  full.names = TRUE
 )
 
-for (i in seq_along(mat[1, ])) {
-  for (j in seq_along(mat[, 1])) {
-    if (mat[j, i] %in% c("a", "t", "g", "c")) {
-      mat[j, i] <- "Base present"
-    } else {
-      mat[j, i] <- "Base absent"
-    }
+aln <- lapply(
+  c(aln_files, "./data/COI_653bp_f.fasta"), # NB Inclusion of COI 65% dataset
+  function(x) {
+    ape::read.dna(x,
+      format = "fasta", as.matrix = TRUE, as.character = TRUE
+    )
   }
-}
-cov_coi <- melt(mat)
-
-# 65pc coverage
-mat <- read.dna(
-  file = "./data/65percent_mitogenomes.fasta",
-  format = "fasta",
-  as.matrix = TRUE,
-  as.character = TRUE)
-
-for (i in seq_along(mat[1, ])) {
-  for (j in seq_along(mat[, 1])) {
-    if (mat[j, i] %in% c("a", "t", "g", "c")) {
-      mat[j, i] <- "Base present"
-    } else {
-      mat[j, i] <- "Base absent"
-    }
-  }
-}
-cov_65 <- melt(mat)
-
-# 5pc coverage
-mat <- read.dna(
-  file = "./data/5percent_mitogenomes.fasta",
-  format = "fasta",
-  as.matrix = TRUE,
-  as.character = TRUE
 )
 
-for (i in seq_along(mat[1, ])) {
-  for (j in seq_along(mat[, 1])) {
-    if (mat[j, i] %in% c("a", "t", "g", "c")) {
-      mat[j, i] <- "Base present"
-    } else {
-      mat[j, i] <- "Base absent"
-    }
-  }
-}
-cov_5 <- melt(mat)
-
-# Panel figure with all of these
-
-decay <- ggplot(dat) +
-  geom_point(aes(x = Year.of.collection, y = Percent.Mitogenome.Coverage),
-    pch = 21, bg = alpha("steelblue", 0.5), size = 3
-  ) +
-  xlab("Year of collection") +
-  ylab("Mitogenome coverage (%)") +
-  ylim(0, 100) +
-  theme_classic(base_size = 13)
-
-pc5 <- ggplot(cov_5, aes(x = Var2, y = Var1)) +
-  geom_raster(aes(fill = value)) +
-  xlab("Mitogenome Postion") +
-  ylab("Individual") +
-  scale_fill_manual(values = c("#f0f0f0", "#636363"), name = "") +
-  scale_y_discrete(labels = NULL, breaks = NULL) +
-  theme(
-    panel.background = element_rect(fill = "white"),
-    legend.position = "none"
-  )
-
-pc65 <- ggplot(cov_65, aes(x = Var2, y = Var1)) +
-  geom_raster(aes(fill = value)) +
-  xlab("Mitogenome Postion") +
-  ylab("Individual") +
-  scale_fill_manual(values = c("#f0f0f0", "#636363"), name = "") +
-  scale_y_discrete(labels = NULL, breaks = NULL) +
-  theme(
-    panel.background = element_rect(fill = "white"),
-    legend.position = "none"
-  )
-
-legend <- get_legend(
-  ggplot(cov_coi, aes(x = Var2, y = Var1)) +
-  geom_raster(aes(fill = value)) +
-  xlab("COI Postion") +
-  ylab("") +
-  scale_fill_manual(values = c("#f0f0f0", "#636363"), name = "") +
-  scale_y_discrete(labels = NULL, breaks = NULL) +
-  theme(
-    panel.background = element_rect(fill = "white"),
-    legend.position = "none"
-  )
+names(aln) <- gsub(
+  c(aln_files, "COI"),
+  pattern = "./data/coverage_separated//|_all.+",
+  replacement = ""
 )
-coi <- ggplot(cov_coi, aes(x = Var2, y = Var1)) +
-  geom_raster(aes(fill = value)) +
-  xlab("COI Postion") +
-  ylab("") +
-  scale_fill_manual(values = c("#f0f0f0", "#636363"), name = "") +
-  scale_y_discrete(labels = NULL, breaks = NULL) +
-  theme(
-    panel.background = element_rect(fill = "white"),
-    legend.position = "none"
+
+## Coverage vs time
+# cov data
+size <- as_tibble(
+  read.delim("file_size_filtered.txt", sep = " ", header = FALSE)
   )
-
-
-panel <- plot_grid(
-  decay, 
-  pc5, 
-  pc65, 
-  coi, 
-  labels = c("a", "b", "c", "d"), 
-  nrow = 2, 
-  ncol = 2)
-
-plot_grid(panel, legend, rel_widths = c(2, .4))
-
-
-## file size  and coverge plot
-size <- as_tibble(read.delim("file_size_filtered.txt", sep = " ", header = FALSE))
 colnames(size) <- c("size", "sample")
 
-cov <- as_tibble(read.delim("coverage.txt", sep = " ", header = FALSE))
-colnames(cov) <- c("sample", "coverage")
-
-# some mismatch between samples. right_join ensures all file sizes defined
-data <- left_join(cov, size, by = "sample") %>%
+size <- size %>%
   mutate(megabytes = case_when(
     grepl("G", size) ~ as.numeric(gsub(pattern = "G", replacement = "", size)) * 1000,
     grepl("M", size) ~ as.numeric(gsub(pattern = "M", replacement = "", size)) * 1,
-  )) %>%
-  mutate(
-    sequencing_type = case_when(
-      grepl("AM", sample) ~ "AM",
-      grepl("CA", sample) ~ "CA",
-    )
-  )
+  ))
 
-# cov vs. size
-pdf("coverage_vs_filesize.pdf", useDingbats = FALSE)
-  ggplot(data) +
-    geom_point(
-      aes(x = megabytes, y = 100 * coverage),
-      pch = 21,
-      fill = "steelblue",
-      size = 3,
-      alpha = 0.6
-    ) +
-    #ylim(0, 100) +
-    facet_wrap(~sequencing_type, scales = "free") +
-    ylab("% Mitogenome Coverage") +
-    theme_minimal()
-dev.off()
-
-# coverage threshold plot
-
-totalSamples <- length(data$sample)
-all <- data %>%
-  select(coverage) %>%
-  group_by(coverage) %>%
-  summarise(n = n()) %>%
-  mutate(n = totalSamples - cumsum(n))
-
-ausSamples <- length(which(grepl("AM|Au_", data$sample)))
-aus <- data %>%
-  filter(grepl("AM|Au_", sample)) %>%
-  select(coverage) %>%
-  group_by(coverage) %>%
-  summarise(n = n()) %>%
-  mutate(n = ausSamples - cumsum(n))
+cov <- left_join(dat, size, by = "sample")
 
 
-
-svg("number_above_coverage.svg")
-bind_rows("Aus Samples" = aus, "All Samples" = all, .id = "group") %>%
+cov_vs_time <- cov %>%
+  subset(coverage > 0) %>%
   ggplot() +
-  geom_line(
-    aes(x = 100 * coverage, y = n, col = group),
+  geom_point(
+    aes(x = year, y = coverage),
+    pch = 21, fill = "dodgerblue", size = 3, alpha = 0.6
   ) +
-  scale_color_manual(values = c("black", "darkred")) +
-  xlab("Mitogenome Coverage Threshold (%)") +
-  ylab("Number of Samples above Threshold") +
-  annotate(
-    "segment",
-    x = c(5, 50, 95),
-    xend = c(5, 50, 95),
-    y = c(0, 0, 0),
-    yend = c(Inf, Inf, Inf),
-    colour = "blue"
+  ylab("Coverage (%)") +
+  xlab("Sample Year") +
+  theme_classic(base_size = 13)
+
+
+cov_vs_size <- cov %>%
+  subset(coverage > 0) %>%
+  ggplot() +
+  geom_point(
+    aes(x = megabytes, y = coverage),
+    pch = 21, fill = "dodgerblue", size = 3, alpha = 0.6
   ) +
-  annotate(
-    "label",
-    x = c(5, 50, 95),
-    y = c(300, 300, 300),
-    label = c("5%", "50%", "95%")
-  ) +
-  theme_minimal()
+  ylab("") +
+  xlab("File Size (Mb)") +
+  theme_classic(base_size = 13)
+
+pdf("coverage.pdf", useDingbats = FALSE, width = 8)
+cowplot::plot_grid(
+  cov_vs_time,
+  cov_vs_size,
+  labels = "AUTO",
+  nrow = 1
+)
 dev.off()
 
-## check overlap with samples in alignments
-aln_files <- dir(path = "./data", pattern = "fasta$", full.names = TRUE)
-aln <- lapply(
-  aln_files,
-  function(x) {
-    ape::read.dna(x, format = "fasta")
-  }
-)
-
-modified_names <- cov$sample
-modified_names <- gsub(modified_names, pattern = "Au_", replacement = "AUS_")
-# check included
-check_match <- function(vec, aln) {
-  names <- rownames(aln)
-  match <- sapply(
-    vec,
-    function(x) {
-      grepl(x, names)
+# genome coverage plots
+get_presence_absence <- function(mat) {
+  for (i in seq_along(mat[1, ])) {
+    for (j in seq_along(mat[, 1])) {
+      if (mat[j, i] %in% c("a", "t", "g", "c")) {
+        mat[j, i] <- "Base present"
+      } else {
+        mat[j, i] <- "Base absent"
+      }
     }
-  )
-  return(sum(match))
+  }
+  print("DOne-1")
+  return(melt(mat))
 }
 
-lapply(
+pres_abs <- lapply(
   aln,
   function(x) {
-    op <- paste0(
-      "aln:", length(rownames(x)),
-      " match:", check_match(modified_names, x)
-    )
+    get_presence_absence(x)
   }
 )
+
+tile_data <- bind_rows(pres_abs, .id = "id")
+colnames(tile_data) <- c("coverage", "sample", "position", "value")
+
+tile_data <- tile_data %>%
+  mutate(coverage = gsub(coverage, pattern = "_percent", replacement = ""))
+
+pdf("alignment.pdf", useDingbats = FALSE)
+tile_data %>%
+  subset(coverage %in% c("5", "25", "50", "65", "COI")) %>%
+  ggplot() +
+  geom_raster(
+    aes(x = position, y = sample, fill = value)
+  ) +
+  scale_fill_manual(values = c("grey", "dodgerblue"), name = "") +
+  scale_y_discrete(labels = NULL, breaks = NULL) +
+  facet_wrap(~coverage, scales = "free") +
+  theme(
+    panel.background = element_rect(fill = "white"),
+    legend.position = c(1, 0),
+    legend.justification = c(1, 0)
+  )
+dev.off()
